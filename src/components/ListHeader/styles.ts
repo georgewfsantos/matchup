@@ -1,0 +1,23 @@
+import { StyleSheet } from "react-native";
+import { theme } from "../../global/styles/theme";
+
+export const styles = StyleSheet.create({
+  container: {
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 24,
+    marginTop: 27,
+  },
+  leftText: {
+    fontFamily: theme.fonts.title700,
+    color: theme.colors.heading,
+    fontSize: 18,
+  },
+  rightText: {
+    fontFamily: theme.fonts.title700,
+    color: theme.colors.highlight,
+    fontSize: 13,
+  },
+});
