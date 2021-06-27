@@ -6,15 +6,34 @@ import { BorderlessButton } from "react-native-gesture-handler";
 import { Background } from "../../components/Background";
 import { Header } from "../../components/Header";
 import { ListHeader } from "../../components/ListHeader";
+import { useRoute } from "@react-navigation/native";
 
 import { theme } from "../../global/styles/theme";
 import BannerImage from "../../assets/banner.png";
 import { styles } from "./styles";
-import { Member, MemberProps } from "../../components/Member";
+import { Member } from "../../components/Member";
 import ListDivider from "../../components/ListDivider";
 import { IconButton } from "../../components/IconButton";
+import { AppointmentProps } from "../../components/Appointment";
+import { api } from "../../service/api";
+
+type Params = {
+  selectedGuild: AppointmentProps;
+};
 
 export function AppointmentDetails() {
+  const route = useRoute();
+
+  const { selectedGuild } = route.params as Params;
+
+  const fetchGuildInfo = async () => {
+    try {
+      const response = await api.get(
+        `/guilds/${selectedGuild.guild.id}/widget.json`
+      );
+    } catch (error) {}
+  };
+
   const members = [
     {
       id: "1",
@@ -42,10 +61,8 @@ export function AppointmentDetails() {
 
       <ImageBackground source={BannerImage} style={styles.banner}>
         <View style={styles.bannerContent}>
-          <Text style={styles.title}>Lendários</Text>
-          <Text style={styles.statement}>
-            É hoje que vamos chegar ao challenger sem perder uma partida da md10
-          </Text>
+          <Text style={styles.title}>{selectedGuild.guild.name}</Text>
+          <Text style={styles.statement}>{selectedGuild.description}</Text>
         </View>
       </ImageBackground>
 
@@ -55,7 +72,7 @@ export function AppointmentDetails() {
         data={members}
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => <Member data={item} />}
-        ItemSeparatorComponent={() => <ListDivider />}
+        ItemSeparatorComponent={() => <ListDivider isCentered />}
         style={styles.memberList}
       />
 

@@ -1,57 +1,66 @@
-import { useNavigation } from "@react-navigation/native";
-import React from "react";
-import { useState } from "react";
+import React, { useState, useCallback } from "react";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import { FlatList, View } from "react-native";
 
 import { AddButton } from "../../components/AddButton";
-import { Appointment } from "../../components/Appointment";
+import { Appointment, AppointmentProps } from "../../components/Appointment";
 import { Background } from "../../components/Background";
 import { CategoryList } from "../../components/CategoryList";
 import ListDivider from "../../components/ListDivider";
-import { ListHeader } from "../../components/ListHeader";
 import Profile from "../../components/Profile";
+import { COLLECTION_APPOINTMENTS } from "../../config/database";
 import { styles } from "./styles";
-
-const appointments = [
-  {
-    id: "1",
-    guild: {
-      id: "1",
-      name: "lendários",
-      icon: null,
-      owner: true,
-    },
-    category: "1",
-    date: "22/06 às 20:40",
-    description:
-      "É hoje que vamos chegar ao challenger sem perder uma partida da md10",
-  },
-
-  {
-    id: "2",
-    guild: {
-      id: "1",
-      name: "lendários",
-      icon: null,
-      owner: true,
-    },
-    category: "1",
-    date: "22/06 às 20:40",
-    description:
-      "É hoje que vamos chegar ao challenger sem perder uma partida da md10",
-  },
-];
+import { Load } from "../../components/Load";
+import { ListHeader } from "../../components/ListHeader";
 
 export function Home() {
-  const navigation = useNavigation();
+  const [appointments, setAppointments] = useState<AppointmentProps[]>([]);
+  const [appointmentsLoading, setAppointmentsLoading] = useState(true);
 
   const [selectedCategory, setSelectedCategory] = useState("");
+
+  const navigation = useNavigation();
+
+  console.log(appointments);
 
   const handleCategorySelection = (categoryId: string) => {
     selectedCategory === categoryId
       ? setSelectedCategory("")
       : setSelectedCategory(categoryId);
+    console.log(categoryId);
   };
+
+  const getAppointmentsFromStorage = async () => {
+    const storageData = await AsyncStorage.getItem(COLLECTION_APPOINTMENTS);
+    const appointmentsFromStorage: AppointmentProps[] = storageData
+      ? JSON.parse(storageData)
+      : [];
+
+    if (selectedCategory) {
+      setAppointments(
+        appointmentsFromStorage.filter((appointment) => {
+          appointment.category === selectedCategory;
+          console.log(appointments);
+        })
+      );
+    } else {
+      setAppointments(appointmentsFromStorage);
+    }
+
+    setAppointmentsLoading(false);
+  };
+
+  const navigateToAppointmentDetails = (selectedGuild: AppointmentProps) => {
+    navigation.navigate("AppointmentDetails", { selectedGuild });
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      getAppointmentsFromStorage();
+    }, [selectedCategory])
+  );
 
   return (
     <Background>
@@ -65,24 +74,30 @@ export function Home() {
         handleCategorySelection={handleCategorySelection}
       />
 
-      <ListHeader leftText="Partidas Agendadas" rightText="Total 6" />
-
-      <FlatList
-        data={appointments}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <Appointment
-            data={item}
-            onPress={() => {
-              navigation.navigate("AppointmentDetails");
-            }}
+      {appointmentsLoading ? (
+        <Load />
+      ) : (
+        <>
+          <ListHeader
+            leftText="Partidas Agendadas"
+            rightText={`Total ${appointments.length}`}
           />
-        )}
-        style={styles.matches}
-        showsVerticalScrollIndicator={false}
-        ItemSeparatorComponent={() => <ListDivider />}
-        contentContainerStyle={{ paddingBottom: 69 }}
-      />
+          <FlatList
+            data={appointments}
+            keyExtractor={(item) => String(item.id)}
+            renderItem={({ item }) => (
+              <Appointment
+                data={item}
+                onPress={() => navigateToAppointmentDetails(item)}
+              />
+            )}
+            style={styles.matches}
+            showsVerticalScrollIndicator={false}
+            ItemSeparatorComponent={() => <ListDivider />}
+            contentContainerStyle={{ paddingBottom: 69 }}
+          />
+        </>
+      )}
     </Background>
   );
 }

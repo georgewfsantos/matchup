@@ -11,7 +11,7 @@ export function Profile() {
       <Avatar urlImage={user.avatar} />
       <View>
         <View style={styles.user}>
-          <Text style={styles.greeting}>Olá, </Text>
+          <Text style={styles.greeting}>Olá,</Text>
           <Text style={styles.userName}>{user.firstName}</Text>
         </View>
 

@@ -11,7 +11,7 @@ import { Guilds } from "../screens/Guilds";
 const AuthStack = createStackNavigator();
 // const {Navigator, Screen} = createStackNavigator();
 
-export function AuthRoutes() {
+export function AppRoutes() {
   return (
     <AuthStack.Navigator
       headerMode="none"
